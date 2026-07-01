@@ -10,7 +10,13 @@ export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
   const {shop, menu} = header;
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
+      <NavLink
+        className="header-logo"
+        prefetch="intent"
+        to="/"
+        style={activeLinkStyle}
+        end
+      >
         <strong>{shop.name}</strong>
       </NavLink>
       <HeaderMenu
@@ -89,7 +95,12 @@ function HeaderCtas({isLoggedIn, cart}) {
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      <NavLink
+        className="header-action"
+        prefetch="intent"
+        to="/account"
+        style={activeLinkStyle}
+      >
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
             {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
@@ -107,6 +118,7 @@ function HeaderMenuMobileToggle() {
   return (
     <button
       className="header-menu-mobile-toggle reset"
+      aria-label="Open menu"
       onClick={() => open('mobile')}
     >
       <h3>☰</h3>
@@ -117,7 +129,7 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
+    <button className="header-action reset" onClick={() => open('search')}>
       Search
     </button>
   );
@@ -132,6 +144,7 @@ function CartBadge({count}) {
 
   return (
     <a
+      className="header-action"
       href="/cart"
       onClick={(e) => {
         e.preventDefault();
@@ -219,7 +232,7 @@ const FALLBACK_HEADER_MENU = {
 function activeLinkStyle({isActive, isPending}) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
+    opacity: isPending ? 0.58 : undefined,
   };
 }
 
