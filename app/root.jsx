@@ -11,6 +11,7 @@ import {
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {getCheckoutDomain} from '~/lib/env';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
@@ -63,12 +64,12 @@ export function links() {
  */
 export async function loader(args) {
   // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
+  const deferredData = await loadDeferredData(args);
 
   const {storefront, env} = args.context;
+  const checkoutDomain = getCheckoutDomain(env);
 
   return {
     ...deferredData,
@@ -79,7 +80,7 @@ export async function loader(args) {
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
     }),
     consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      checkoutDomain,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       withPrivacyBanner: false,
       // localize the privacy banner
@@ -116,7 +117,7 @@ async function loadCriticalData({context}) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  * @param {Route.LoaderArgs}
  */
-function loadDeferredData({context}) {
+async function loadDeferredData({context}) {
   const {storefront, customerAccount, cart} = context;
 
   // defer the footer query (below the fold)
@@ -133,9 +134,9 @@ function loadDeferredData({context}) {
       return null;
     });
   return {
-    cart: cart.get(),
-    isLoggedIn: customerAccount.isLoggedIn(),
-    footer,
+    cart: await cart.get(),
+    isLoggedIn: await customerAccount.isLoggedIn(),
+    footer: await footer,
   };
 }
 

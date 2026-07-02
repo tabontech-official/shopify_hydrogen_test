@@ -103,30 +103,46 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, vendor} = product;
 
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+    <div className="product-page">
+      <div className="product">
+        <div className="product-gallery">
+          <ProductImage image={selectedVariant?.image} />
+          <div className="product-gallery-note">
+            <span>Responsibly sourced</span>
+            <span>Low-impact packaging</span>
+          </div>
+        </div>
+        <div className="product-main">
+          <p className="product-kicker">{vendor || 'Eco essential'}</p>
+          <h1>{title}</h1>
+          <div className="product-buy-card">
+            <div className="product-price-row">
+              <ProductPrice
+                price={selectedVariant?.price}
+                compareAtPrice={selectedVariant?.compareAtPrice}
+              />
+              <span className="product-stock">
+                {selectedVariant?.availableForSale ? 'In stock' : 'Sold out'}
+              </span>
+            </div>
+            <ProductForm
+              productOptions={productOptions}
+              selectedVariant={selectedVariant}
+            />
+            <div className="product-perks" aria-label="Purchase benefits">
+              <span>Free shipping over $100</span>
+              <span>Easy 30-day returns</span>
+              <span>Secure checkout</span>
+            </div>
+          </div>
+          <div className="product-description-card">
+            <h2>Description</h2>
+            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          </div>
+        </div>
       </div>
       <Analytics.ProductView
         data={{

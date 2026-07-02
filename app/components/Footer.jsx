@@ -1,26 +1,25 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {NavLink} from 'react-router';
 
 /**
  * @param {FooterProps}
  */
-export function Footer({footer: footerPromise, header, publicStoreDomain}) {
+export function Footer({footer, header, publicStoreDomain}) {
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+    <footer className="footer">
+      <div className="footer-brand">
+        <strong>{header.shop.name}</strong>
+        <p>
+          Thoughtful fashion made with care for people, craft, and the planet.
+        </p>
+      </div>
+      {footer?.menu && header.shop.primaryDomain?.url && (
+        <FooterMenu
+          menu={footer.menu}
+          primaryDomainUrl={header.shop.primaryDomain.url}
+          publicStoreDomain={publicStoreDomain}
+        />
+      )}
+    </footer>
   );
 }
 
@@ -121,7 +120,7 @@ function activeLinkStyle({isActive, isPending}) {
 
 /**
  * @typedef {Object} FooterProps
- * @property {Promise<FooterQuery|null>} footer
+ * @property {FooterQuery|null} footer
  * @property {HeaderQuery} header
  * @property {string} publicStoreDomain
  */

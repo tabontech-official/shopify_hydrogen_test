@@ -1,9 +1,11 @@
+import {getCheckoutDomain} from '~/lib/env';
+
 /**
  * @param {Route.ActionArgs}
  */
 export async function action({params, context, request}) {
   const response = await fetch(
-    `https://${context.env.PUBLIC_CHECKOUT_DOMAIN}/api/${params.version}/graphql.json`,
+    `https://${getCheckoutDomain(context.env)}/api/${params.version}/graphql.json`,
     {
       method: 'POST',
       body: request.body,

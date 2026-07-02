@@ -1,5 +1,4 @@
-import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {NavLink} from 'react-router';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
 
@@ -17,7 +16,11 @@ export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
         style={activeLinkStyle}
         end
       >
-        <strong>{shop.name}</strong>
+        {shop.brand?.logo?.image?.url ? (
+          <img src={shop.brand.logo.image.url} alt={shop.name} />
+        ) : (
+          <strong>{shop.name}</strong>
+        )}
       </NavLink>
       <HeaderMenu
         menu={menu}
@@ -100,12 +103,9 @@ function HeaderCtas({isLoggedIn, cart}) {
         prefetch="intent"
         to="/account"
         style={activeLinkStyle}
+        aria-label={isLoggedIn ? 'Account' : 'Sign in'}
       >
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
+        <span aria-hidden="true">Account</span>
       </NavLink>
       <SearchToggle />
       <CartToggle cart={cart} />
@@ -129,8 +129,12 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="header-action reset" onClick={() => open('search')}>
-      Search
+    <button
+      className="header-action reset"
+      onClick={() => open('search')}
+      aria-label="Search"
+    >
+      <span aria-hidden="true">Search</span>
     </button>
   );
 }
@@ -166,19 +170,8 @@ function CartBadge({count}) {
  * @param {Pick<HeaderProps, 'cart'>}
  */
 function CartToggle({cart}) {
-  return (
-    <Suspense fallback={<CartBadge count={null} />}>
-      <Await resolve={cart}>
-        <CartBanner />
-      </Await>
-    </Suspense>
-  );
-}
-
-function CartBanner() {
-  const originalCart = useAsyncValue();
-  const cart = useOptimisticCart(originalCart);
-  return <CartBadge count={cart?.totalQuantity ?? 0} />;
+  const optimisticCart = useOptimisticCart(cart);
+  return <CartBadge count={optimisticCart?.totalQuantity ?? 0} />;
 }
 
 const FALLBACK_HEADER_MENU = {
@@ -191,6 +184,15 @@ const FALLBACK_HEADER_MENU = {
       title: 'Collections',
       type: 'HTTP',
       url: '/collections',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609599032',
+      resourceId: 'gid://shopify/Page/92591030328',
+      tags: [],
+      title: 'About',
+      type: 'PAGE',
+      url: '/pages/about',
       items: [],
     },
     {
@@ -209,15 +211,6 @@ const FALLBACK_HEADER_MENU = {
       title: 'Policies',
       type: 'HTTP',
       url: '/policies',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
-      tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
       items: [],
     },
   ],
@@ -240,8 +233,8 @@ function activeLinkStyle({isActive, isPending}) {
 /**
  * @typedef {Object} HeaderProps
  * @property {HeaderQuery} header
- * @property {Promise<CartApiQueryFragment|null>} cart
- * @property {Promise<boolean>} isLoggedIn
+ * @property {CartApiQueryFragment|null} cart
+ * @property {boolean} isLoggedIn
  * @property {string} publicStoreDomain
  */
 
