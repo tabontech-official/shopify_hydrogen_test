@@ -181,14 +181,15 @@ function ProductSection({compact = false, eyebrow, products, title}) {
 
 function EcoProductCard({loading, product}) {
   const variant = product.selectedOrFirstAvailableVariant;
+  const image = getProductImage(product);
 
   return (
     <article className="eco-product-card">
       <Link className="eco-product-image" to={`/products/${product.handle}`}>
-        {product.featuredImage ? (
+        {image ? (
           <Image
-            data={product.featuredImage}
-            alt={product.featuredImage.altText || product.title}
+            data={image}
+            alt={image.altText || product.title}
             aspectRatio="4/5"
             loading={loading}
             sizes="(min-width: 900px) 24vw, (min-width: 600px) 50vw, 100vw"
@@ -288,10 +289,10 @@ function CommunitySection({products}) {
       <div className="eco-community-grid">
         {reviews.map((product) => (
           <article key={product.id}>
-            {product.featuredImage && (
+            {getProductImage(product) && (
               <Image
-                data={product.featuredImage}
-                alt={product.featuredImage.altText || product.title}
+                data={getProductImage(product)}
+                alt={getProductImage(product).altText || product.title}
                 aspectRatio="1/1"
                 sizes="90px"
                 loading="lazy"
@@ -312,7 +313,7 @@ function CommunitySection({products}) {
 function getHeroImage(collections, products) {
   return (
     collections.find((collection) => collection.image)?.image ||
-    products.find((product) => product.featuredImage)?.featuredImage
+    getProductImage(products.find((product) => getProductImage(product)))
   );
 }
 
@@ -320,8 +321,7 @@ function getStoryImage(collections, products) {
   return (
     collections.find((collection, index) => index > 0 && collection.image)
       ?.image ||
-    products.find((product, index) => index > 1 && product.featuredImage)
-      ?.featuredImage ||
+    getProductImage(products.find((product, index) => index > 1 && getProductImage(product))) ||
     getHeroImage(collections, products)
   );
 }
@@ -340,14 +340,25 @@ function buildCategories(collections, products) {
   if (collectionCategories.length >= 4) return collectionCategories;
 
   const productImages = products
-    .filter((product) => product.featuredImage)
-    .map((product) => product.featuredImage);
+    .map((product) => getProductImage(product))
+    .filter(Boolean);
 
   return fallbackTitles.map((title, index) => ({
     title: collectionCategories[index]?.title || title,
     to: collectionCategories[index]?.to || '/collections/all',
     image: collectionCategories[index]?.image || productImages[index],
   }));
+}
+
+function getProductImage(product) {
+  if (!product) return null;
+
+  return (
+    product.featuredImage ||
+    product.images?.nodes?.[0] ||
+    product.media?.nodes?.find((media) => media.previewImage)?.previewImage ||
+    null
+  );
 }
 
 const HOMEPAGE_COLLECTIONS_QUERY = `#graphql
@@ -381,6 +392,26 @@ const HOMEPAGE_PRODUCTS_QUERY = `#graphql
       altText
       width
       height
+    }
+    images(first: 3) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    media(first: 3) {
+      nodes {
+        previewImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+      }
     }
     priceRange {
       minVariantPrice {

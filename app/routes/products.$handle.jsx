@@ -109,7 +109,15 @@ export default function Product() {
     <div className="product-page">
       <div className="product">
         <div className="product-gallery">
-          <ProductImage image={selectedVariant?.image} />
+          <ProductImage
+            image={
+              selectedVariant?.image ||
+              product.featuredImage ||
+              product.images?.nodes?.[0] ||
+              product.media?.nodes?.find((media) => media.previewImage)
+                ?.previewImage
+            }
+          />
           <div className="product-gallery-note">
             <span>Responsibly sourced</span>
             <span>Low-impact packaging</span>
@@ -208,6 +216,33 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    images(first: 6) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    media(first: 6) {
+      nodes {
+        previewImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     options {
